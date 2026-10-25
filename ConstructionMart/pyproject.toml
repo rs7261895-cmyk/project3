@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "constructionmart"
+version = "1.0.0"
+description = "Django construction materials storefront"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "Django>=5.2,<5.3",
+    "dj-database-url>=2.3,<4",
+    "psycopg[binary]>=3.2,<4",
+]
+
+[tool.vercel.scripts]
+# Vercel runs this before deployment. DATABASE_URL and DJANGO_SECRET_KEY must be configured.
+build = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py seed_products"
+
+[tool.setuptools.packages.find]
+include = ["constructionmart*", "store*"]

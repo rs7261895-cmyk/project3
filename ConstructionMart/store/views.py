@@ -45,9 +45,13 @@ def add_to_cart(request, product_id):
         quantity = int(request.POST.get("quantity", "1"))
     except ValueError:
         quantity = 1
-    quantity = max(1, min(quantity, product.stock or 1))
+    if product.stock <= 0:
+        messages.error(request, f"{product.name} is currently out of stock.")
+        return redirect(request.META.get("HTTP_REFERER", "home"))
+    quantity = max(1, min(quantity, product.stock))
     cart = request.session.get("cart", {})
-    cart[str(product.id)] = min(int(cart.get(str(product.id), 0)) + quantity, product.stock)
+    existing_quantity = max(0, int(cart.get(str(product.id), 0)))
+    cart[str(product.id)] = min(existing_quantity + quantity, product.stock)
     request.session["cart"] = cart
     messages.success(request, f"{product.name} added to your cart.")
     return redirect(request.META.get("HTTP_REFERER", "home"))
@@ -66,6 +70,9 @@ def update_cart(request, product_id):
     cart = request.session.get("cart", {})
     if quantity <= 0:
         cart.pop(str(product_id), None)
+    elif product.stock <= 0:
+        cart.pop(str(product_id), None)
+        messages.error(request, f"{product.name} is currently out of stock.")
     else:
         cart[str(product_id)] = min(quantity, product.stock)
     request.session["cart"] = cart
@@ -108,9 +115,14 @@ def checkout(request):
             product.stock -= row["quantity"]
             product.save(update_fields=["stock"])
         request.session["cart"] = {}
+        request.session["last_order_id"] = order.pk
         return redirect("order_success", order_id=order.pk)
     return render(request, "store/checkout.html", {"rows": rows, "total": total, "cart_count": count})
 
 def order_success(request, order_id):
+    # Prevent someone from guessing an order ID to view another customer's address.
+    if request.session.get("last_order_id") != order_id:
+        messages.info(request, "Please place an order to view its confirmation.")
+        return redirect("home")
     order = get_object_or_404(Order, pk=order_id)
     return render(request, "store/order_success.html", {"order": order, "cart_count": 0})

@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 from store.models import Product
 
+
 class Command(BaseCommand):
-    help = "Create sample construction materials for local demo use."
+    help = "Create the sample construction materials if they do not already exist."
 
     def handle(self, *args, **options):
         products = [
@@ -14,10 +15,20 @@ class Command(BaseCommand):
             ("M-Sand", "sand", "Manufactured sand. Price shown per cubic foot.", "cu ft", "55.00", 800, "GreenRock Aggregates"),
             ("Blue Metal Aggregate", "sand", "Construction aggregate. Price shown per cubic foot.", "cu ft", "48.00", 600, "GreenRock Aggregates"),
         ]
+        created = 0
         for name, category, description, unit, price, stock, supplier in products:
-            Product.objects.update_or_create(
+            _, was_created = Product.objects.get_or_create(
                 name=name,
-                defaults={"category": category, "description": description, "unit": unit,
-                          "price": price, "stock": stock, "supplier_name": supplier}
+                defaults={
+                    "category": category,
+                    "description": description,
+                    "unit": unit,
+                    "price": price,
+                    "stock": stock,
+                    "supplier_name": supplier,
+                },
             )
-        self.stdout.write(self.style.SUCCESS(f"Loaded {len(products)} demo products."))
+            created += int(was_created)
+        self.stdout.write(
+            self.style.SUCCESS(f"Sample products ready. Created {created} new product(s).")
+        )
