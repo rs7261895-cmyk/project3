@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Your Cart | ConstructionMart{% endblock %}
+{% block content %}
+<section class="page-header"><div class="eyebrow">YOUR MATERIAL LIST</div><h1>Shopping cart</h1><p>Review quantities and your material subtotal before checkout.</p></section>
+<section class="cart-layout">
+<div class="cart-items">
+{% for row in rows %}
+<div class="cart-item"><div class="mini-art art-{{ row.product.category }}"><span>{% if row.product.category == 'cement' %}▰{% elif row.product.category == 'steel' %}〽{% elif row.product.category == 'bricks' %}▦{% else %}◆{% endif %}</span></div><div class="cart-product"><h3>{{ row.product.name }}</h3><p>₹{{ row.product.price|floatformat:2 }} / {{ row.product.unit }}</p><small>{{ row.product.supplier_name }}</small></div><form method="post" action="{% url 'update_cart' row.product.id %}" class="qty-update">{% csrf_token %}<label>Qty <input type="number" name="quantity" min="0" max="{{ row.product.stock }}" value="{{ row.quantity }}"></label><button class="text-button">Update</button></form><strong class="line-total">₹{{ row.line_total|floatformat:2 }}</strong><form method="post" action="{% url 'remove_from_cart' row.product.id %}">{% csrf_token %}<button class="remove-button" title="Remove">×</button></form></div>
+{% empty %}<div class="empty-state"><div class="empty-icon">▱</div><h2>Your cart is empty</h2><p>Browse construction essentials and add items to your list.</p><a href="{% url 'home' %}" class="btn btn-orange">Browse materials</a></div>{% endfor %}
+<a class="back-link" href="{% url 'home' %}">← Continue shopping</a>
+</div>
+<aside class="summary-card"><h2>Order summary</h2><div class="summary-line"><span>Material subtotal</span><strong>₹{{ total|floatformat:2 }}</strong></div><div class="summary-line"><span>Delivery</span><span>Confirmed by supplier</span></div><div class="summary-line"><span>Taxes</span><span>Not calculated</span></div><div class="summary-total"><span>Estimated subtotal</span><strong>₹{{ total|floatformat:2 }}</strong></div>{% if rows %}<a class="btn btn-orange full-width" href="{% url 'checkout' %}">Proceed to checkout →</a>{% else %}<a class="btn btn-dark full-width" href="{% url 'home' %}">Explore products</a>{% endif %}<p class="fine-print">Demo only. Final delivery charges and taxes may vary.</p></aside>
+</section>
+{% endblock %}

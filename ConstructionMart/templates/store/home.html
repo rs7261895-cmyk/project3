@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}ConstructionMart | Building Materials{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy"><div class="eyebrow">YOUR PROJECT. OUR MATERIALS.</div><h1>Build better.<br><span>Buy smarter.</span></h1><p>Find essential construction materials, compare sample prices, and plan your next project from one place.</p><a class="btn btn-light" href="#products">Explore materials <span>→</span></a><div class="hero-stats"><div><strong>7+</strong><small>Sample products</small></div><div><strong>4</strong><small>Core categories</small></div><div><strong>1</strong><small>Simple marketplace</small></div></div></div>
+  <div class="hero-visual"><div class="visual-grid"></div><div class="material-card cement-card"><span class="material-symbol">▰</span><div><strong>Cement</strong><small>Strong foundations</small></div></div><div class="material-card steel-card"><span class="material-symbol">〽</span><div><strong>Steel</strong><small>Built to last</small></div></div><div class="hero-stamp">PLAN <b>•</b> SOURCE <b>•</b> BUILD</div></div>
+</section>
+<section class="trust-strip"><div><span>✓</span> Clear sample pricing</div><div><span>✓</span> Quantity calculator</div><div><span>✓</span> Easy order workflow</div></section>
+<section class="section" id="products">
+  <div class="section-heading"><div><div class="eyebrow">THE MATERIALS YOU NEED</div><h2>Shop construction essentials</h2><p>Browse products and estimate material costs in seconds.</p></div><span class="product-count">{{ products|length }} products</span></div>
+  <form method="get" class="filters"><div class="search-box"><span>⌕</span><input name="q" value="{{ query }}" placeholder="Search cement, steel, bricks..."></div><select name="category"><option value="">All categories</option>{% for value,label in categories %}<option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="btn btn-dark" type="submit">Search</button>{% if query or selected_category %}<a class="clear-filter" href="{% url 'home' %}">Clear</a>{% endif %}</form>
+  <div class="product-grid">
+  {% for product in products %}
+    <article class="product-card">
+      <div class="product-art art-{{ product.category }}"><span class="category-pill">{{ product.get_category_display }}</span><div class="product-illustration">{% if product.category == 'cement' %}<div class="cement-bag">CEMENT<small>BUILD STRONG</small></div>{% elif product.category == 'steel' %}<div class="steel-rods"><i></i><i></i><i></i><i></i></div>{% elif product.category == 'bricks' %}<div class="brick-stack"><i></i><i></i><i></i><i></i><i></i><i></i></div>{% else %}<div class="sand-pile"></div>{% endif %}</div></div>
+      <div class="product-info"><div class="supplier">SUPPLIED BY {{ product.supplier_name|upper }}</div><h3>{{ product.name }}</h3><p>{{ product.description }}</p><div class="price-row"><div><strong>₹{{ product.price|floatformat:2 }}</strong><span>/ {{ product.unit }}</span></div><span class="stock">{% if product.stock > 0 %}In stock{% else %}Out of stock{% endif %}</span></div>
+      <form method="post" action="{% url 'add_to_cart' product.id %}" class="add-form">{% csrf_token %}<label>Qty <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" {% if product.stock == 0 %}disabled{% endif %}></label><button class="btn btn-orange" {% if product.stock == 0 %}disabled{% endif %}>Add to cart <span>+</span></button></form>
+      </div>
+    </article>
+  {% empty %}<div class="empty-state"><h3>No products found</h3><p>Try another search or category.</p><a href="{% url 'home' %}" class="btn btn-dark">View all products</a></div>{% endfor %}
+  </div>
+</section>
+<section class="calculator-band"><div><div class="eyebrow">PLAN YOUR BUDGET</div><h2>Small details. Smarter estimates.</h2><p>Choose quantities and add materials to your cart. Your subtotal updates automatically at checkout.</p></div><a href="{% url 'cart' %}" class="btn btn-light">Open price summary →</a></section>
+{% endblock %}

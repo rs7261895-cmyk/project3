@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Order placed | ConstructionMart{% endblock %}
+{% block content %}
+<section class="success-panel"><div class="success-mark">✓</div><div class="eyebrow">DEMO ORDER CREATED</div><h1>Thank you, {{ order.customer_name }}.</h1><p>Your sample order <strong>#{{ order.id }}</strong> has been recorded successfully.</p><div class="success-details"><div><span>Order status</span><strong>{{ order.get_status_display }}</strong></div><div><span>Material subtotal</span><strong>₹{{ order.total|floatformat:2 }}</strong></div><div><span>Delivery address</span><strong>{{ order.delivery_address }}</strong></div></div><p class="fine-print">No payment was taken. This is a learning project and does not notify a real supplier.</p><a href="{% url 'home' %}" class="btn btn-dark">Back to materials</a></section>
+{% endblock %}
